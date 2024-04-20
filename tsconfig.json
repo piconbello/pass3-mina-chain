@@ -1,5 +1,13 @@
 {
   "compilerOptions": {
+    "composite": false,
+    "forceConsistentCasingInFileNames": true,
+    "inlineSources": false,
+    "isolatedModules": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "preserveWatchOutput": true,
+    "skipLibCheck": true,
     "outDir": "./dist",
     "strictNullChecks": true,
     "lib": ["es2020"],
@@ -19,5 +27,5 @@
   },
   "files": ["node_modules/jest-expect-message/types/index.d.ts"],
   "include": ["./src/**/*"],
-  "exclude": ["jest.config.cjs"]
+  "exclude": ["node_modules", "jest.config.cjs"]
 }
