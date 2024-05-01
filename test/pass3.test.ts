@@ -126,5 +126,18 @@ describe('pass3 interaction', () => {
 
     expect(block?.transactions[0].status.toBoolean()).toBe(true);
     expect(identity).toStrictEqual(proof.publicOutput.identity);
+
+    const nonChangedProofVerification = await verify(
+      proof,
+      verificationKey.verificationKey
+    );
+    expect(nonChangedProofVerification).toBe(true);
+
+    proof.publicOutput.identity.currentDate = Field.from('21000101');
+    const changedProofVerification = await verify(
+      proof,
+      verificationKey.verificationKey
+    );
+    expect(changedProofVerification).toBe(false);
   }, 1_000_000);
 });
