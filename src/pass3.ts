@@ -7,7 +7,6 @@ import {
 import { StateMap } from '@proto-kit/protocol';
 import {
   PublicKey,
-  Bool,
   Experimental,
   Field,
   Struct,
@@ -69,11 +68,8 @@ export const zkProgramPass3 = Experimental.ZkProgram({
         validSignature_.assertTrue('Invalid user signature');
 
         // TODO: MAYBE Better assertions for the data
-        console.log('personalData.over18: ', personalData.over18);
         personalData.over18.assertTrue('over18 is not true');
-        console.log('personalData.unique: ', personalData.unique);
         personalData.unique.assertTrue('unique is not true');
-        console.log('personalData.sanctioned: ', personalData.sanctioned);
         personalData.sanctioned.assertFalse('sanctioned is not false');
 
         return new PublicOutput({
