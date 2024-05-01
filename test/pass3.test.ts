@@ -1,4 +1,8 @@
+process.env.ORACLE_PUBLIC_KEY =
+  'B62qmdp1brcf4igTDyv7imzhpVifpNsb2dm3TRJb2bNEeVn1q8uZ9s8';
+
 import fs from 'fs';
+import { jest } from '@jest/globals';
 import { TestingAppChain } from '@proto-kit/sdk';
 import {
   PrivateKey,
@@ -21,13 +25,15 @@ import { Identity } from '../src/utils';
 interface OracleResponse {
   message: string;
   data: {
-    identityData: { // could be an interface
+    identityData: {
+      // could be an interface
       over18: boolean;
       sanctioned: boolean;
       unique: boolean;
       currentDate: string;
     };
     walletId: string; // TODO change to publicKey
+    doesExist: boolean;
     signature: {
       r: string;
       s: string;
@@ -35,6 +41,32 @@ interface OracleResponse {
     publicKey: string;
   };
 }
+
+const mockOracleResponse: OracleResponse = {
+  message: 'Service called successfully',
+  data: {
+    identityData: {
+      over18: true,
+      sanctioned: false,
+      unique: true,
+      currentDate: '20240501',
+    },
+    walletId: 'EKFFPMTjJivav7xxEdXyCVKs5KedZsZaQWSWXkXdM4UjeH54rJV4',
+    doesExist: true,
+    signature: {
+      r: '3713807165287585871472741919076973598580564819317795203796236102083443117890',
+      s: '15760059556638958257089083211160862708145378018944207428893737827195062927825',
+    },
+    publicKey: 'B62qmdp1brcf4igTDyv7imzhpVifpNsb2dm3TRJb2bNEeVn1q8uZ9s8',
+  },
+};
+
+// Mock node native fetch
+global.fetch = jest.fn(() =>
+  Promise.resolve({
+    json: () => Promise.resolve(mockOracleResponse),
+  })
+) as any;
 
 describe('pass3 interaction', () => {
   it('should create a proof and update the state', async () => {
@@ -106,7 +138,6 @@ describe('pass3 interaction', () => {
       creatorPublicKey
     );
     console.log('proof created: ', proof);
-    
 
     // write proof to a file
     const proofStr = JSON.stringify(proof);

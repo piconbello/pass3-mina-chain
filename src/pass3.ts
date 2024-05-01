@@ -56,9 +56,7 @@ export const zkProgramPass3 = Experimental.ZkProgram({
       ): PublicOutput {
         // Validate the data from the oracle
         const validSignature = oracleSignature.verify(
-          PublicKey.fromBase58(
-            'B62qmdp1brcf4igTDyv7imzhpVifpNsb2dm3TRJb2bNEeVn1q8uZ9s8'
-          ),
+          PublicKey.fromBase58(process.env.ORACLE_PUBLIC_KEY as string),
           personalData.toFields()
         );
         validSignature.assertTrue('Invalid oracle signature');
