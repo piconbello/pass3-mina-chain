@@ -44,14 +44,12 @@ export const zkProgramPass3 = Experimental.ZkProgram({
       privateInputs: [
         Identity,
         Signature, // zkOracle data signature
-        Signature, // user wallet signature
         PublicKey, // user wallet public key
       ],
       method(
         personalData: Identity,
         oracleSignature: Signature,
-        userSignature: Signature,
-        userPublicKey: PublicKey
+        userWalletId: PublicKey
       ): PublicOutput {
         // Validate the data from the oracle
         const validSignature = oracleSignature.verify(
@@ -60,13 +58,6 @@ export const zkProgramPass3 = Experimental.ZkProgram({
         );
         validSignature.assertTrue('Invalid oracle signature');
 
-        // Validate the data from the user
-        const validSignature_ = userSignature.verify(
-          userPublicKey,
-          personalData.toFields()
-        );
-        validSignature_.assertTrue('Invalid user signature');
-
         // TODO: MAYBE Better assertions for the data
         personalData.over18.assertTrue('over18 is not true');
         personalData.unique.assertTrue('unique is not true');
@@ -74,7 +65,7 @@ export const zkProgramPass3 = Experimental.ZkProgram({
 
         return new PublicOutput({
           identity: personalData,
-          userPublicKey: userPublicKey,
+          userPublicKey: userWalletId,
         });
       },
     },

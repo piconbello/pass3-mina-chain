@@ -3,7 +3,15 @@ process.env.ORACLE_PUBLIC_KEY =
 
 import { jest } from '@jest/globals';
 import { TestingAppChain } from '@proto-kit/sdk';
-import { PrivateKey, Bool, Field, verify, Signature } from 'o1js';
+import {
+  PrivateKey,
+  Bool,
+  Field,
+  verify,
+  Signature,
+  CircuitString,
+  PublicKey,
+} from 'o1js';
 import {
   Pass3,
   generateSignatureUsingDefaultKeys,
@@ -40,7 +48,7 @@ const mockOracleResponse: OracleResponse = {
       unique: true,
       currentDate: '20240501',
     },
-    walletId: 'EKFFPMTjJivav7xxEdXyCVKs5KedZsZaQWSWXkXdM4UjeH54rJV4',
+    walletId: 'B62qmKXrzYjhhgiCx8cQAfZ3V2ekkh2oNUocCbmRr1Kjxx4bM9TKwM3',
     doesExist: true,
     signature: {
       r: '3713807165287585871472741919076973598580564819317795203796236102083443117890',
@@ -83,7 +91,7 @@ describe('pass3 interaction', () => {
 
     // Fetch user data from the oracle localhost:8080/oracle/:walletId
     const oracleResponse = (await fetch(
-      'http://localhost:8080/oracle/EKFFPMTjJivav7xxEdXyCVKs5KedZsZaQWSWXkXdM4UjeH54rJV4'
+      'http://localhost:8080/oracle/B62qmKXrzYjhhgiCx8cQAfZ3V2ekkh2oNUocCbmRr1Kjxx4bM9TKwM3'
     ).then((res) => res.json())) as OracleResponse;
     // console.log('oracleResponse: ', oracleResponse);
 
@@ -98,17 +106,10 @@ describe('pass3 interaction', () => {
 
     const oracleSignature = Signature.fromJSON(oracleData.signature);
 
-    const [creatorPublicKey, creatorDataSignature] =
-      generateSignatureUsingDefaultKeys(
-        tempIdentityData.toFields(),
-        'EKFFPMTjJivav7xxEdXyCVKs5KedZsZaQWSWXkXdM4UjeH54rJV4'
-      );
-
     const proof = await zkProgramPass3.proveIdentity(
       tempIdentityData,
       oracleSignature,
-      creatorDataSignature,
-      creatorPublicKey
+      PublicKey.fromBase58(oracleData.walletId)
     );
 
     const tx = await appChain.transaction(alice, () => {
