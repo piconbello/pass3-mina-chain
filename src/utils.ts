@@ -8,8 +8,6 @@ export class Identity extends Struct({
 }) {
   // method for signature creation and verification
   toFields(): Field[] {
-    const b = this.over18.toField();
-    const a = this.over18.toFields();
     return [
       ...this.over18.toFields(),
       ...this.sanctioned.toFields(),

@@ -18,13 +18,14 @@
     "lint": "eslint .",
     "test": "node --experimental-vm-modules --experimental-wasm-modules --experimental-wasm-threads ./node_modules/jest/bin/jest.js",
     "test:watch": "npm run test --watchAll",
-    "build": "tsc -p tsconfig.json",
-    "start": "FORCE_COLOR=3 protokit start ./dist/chain.config.js",
-    "build-and-start": "pnpm run build && pnpm run start",
+    "build": "tsc",
+    "start": "node --experimental-specifier-resolution=node dist/src/main.js",
+    "build-and-start": "yarn build && yarn start",
     "dev": "npm-watch build-and-start"
   },
   "devDependencies": {
     "@jest/globals": "^29.6.1",
+    "@types/express": "^4.17.21",
     "@types/jest": "^29.5.7",
     "@types/node": "^20.8.10",
     "@types/react-dom": "^18.2.7",
@@ -54,6 +55,7 @@
     "@proto-kit/protocol": "0.1.1-develop.651",
     "@proto-kit/sdk": "0.1.1-develop.651",
     "@proto-kit/sequencer": "0.1.1-develop.651",
+    "express": "^4.19.2",
     "o1js": "0.13.1",
     "reflect-metadata": "^0.2.1",
     "tsyringe": "^4.7.0"
