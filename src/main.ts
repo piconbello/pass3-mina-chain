@@ -1,18 +1,62 @@
-process.env.ORACLE_PUBLIC_KEY =
-  'B62qmdp1brcf4igTDyv7imzhpVifpNsb2dm3TRJb2bNEeVn1q8uZ9s8';
-
+import { exit } from 'process';
+import dotenv from 'dotenv';
 import express, { Request, Response } from 'express';
+import { Bool, Field, PrivateKey, PublicKey, Signature } from 'o1js';
+import { InMemorySigner } from '@proto-kit/sdk';
+
+import { client } from './client.config';
 import { zkProgramPass3 } from './pass3';
+import { Identity, OracleData, OracleResponse } from './utils';
+
+dotenv.config();
 
 const app = express();
-const port = 3000;
 
 let verificationKeyZkProgram: string | null = null;
-const setupZkProgram = async () => {
+let chainClient: any = null;
+let signerPublicKey: PublicKey | null = null;
+
+const setup = async () => {
+  if (!process.env.SIGNER_PRIVATE_KEY) {
+    console.error('Missing signer private key');
+    exit(1);
+  }
+
+  if (!process.env.ORACLE_PUBLIC_KEY) {
+    console.error('Missing oracle public key');
+    exit(1);
+  }
+
+  if (!process.env.ORACLE_BASE_URL) {
+    console.error('Missing oracle base url');
+    exit(1);
+  }
+
   console.log('Compiling zk program');
   const { verificationKey } = await zkProgramPass3.compile();
   verificationKeyZkProgram = verificationKey;
   console.log('Zk program compiled');
+
+  console.log('Setting up signer public key');
+  const signerPrivateKey = PrivateKey.fromBase58(
+    process.env.SIGNER_PRIVATE_KEY
+  );
+  signerPublicKey = signerPrivateKey.toPublicKey();
+  console.log('Signer public key ready');
+
+  console.log('Setting up chain client');
+  await client.start();
+
+  const inMemorySigner = new InMemorySigner();
+  client.registerValue({
+    Signer: inMemorySigner,
+  });
+
+  const resolvedInMemorySigner = client.resolve('Signer') as InMemorySigner;
+  resolvedInMemorySigner.config = { signer: signerPrivateKey };
+
+  chainClient = client;
+  console.log('Chain client ready');
 };
 
 app.get('/', (req: Request, res: Response) => {
@@ -21,12 +65,98 @@ app.get('/', (req: Request, res: Response) => {
 
 app.get('/hello', (req: Request, res: Response) => {
   res.send(
-    verificationKeyZkProgram ? 'Zk program is ready' : 'Zk program is not ready'
+    verificationKeyZkProgram && chainClient
+      ? 'Zk program & chain client is ready'
+      : 'Zk program & chain client is not ready'
   );
 });
 
-app.listen(port, () => {
-  console.log('Server started at http://localhost:' + port);
+app.post('/prove', async (req: Request, res: Response) => {
+  if (!verificationKeyZkProgram || !chainClient || !signerPublicKey) {
+    res
+      .status(500)
+      .send('Zk program, chain client or signer public key missing');
+    return;
+  }
+
+  const walletId = req.body.walletId;
+  if (!walletId) {
+    res.status(400).send('Wallet id is missing');
+    return;
+  }
+
+  // Fetch user data from the oracle
+  let oracleData: OracleData | null = null;
+  try {
+    const response = await fetch(
+      `${process.env.ORACLE_BASE_URL}/oracle/${walletId}`
+    );
+
+    const _response = (await response.json()) as OracleResponse;
+
+    oracleData = _response.data;
+    if (!oracleData.doesExist) {
+      res.status(400).send('User does not exist');
+      return;
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Failed to fetch oracle response');
+  }
+
+  if (!oracleData) {
+    res.status(500).send('Failed to fetch oracle response');
+    return;
+  }
+
+  // Create a proof
+  const tempIdentityData = new Identity({
+    over18: Bool(oracleData.identityData.over18),
+    sanctioned: Bool(oracleData.identityData.sanctioned),
+    unique: Bool(oracleData.identityData.unique),
+    currentDate: Field.from(oracleData.identityData.currentDate),
+  });
+
+  const oracleSignature = Signature.fromJSON(oracleData.signature);
+
+  let proof: any = null;
+  try {
+    proof = await zkProgramPass3.proveIdentity(
+      tempIdentityData,
+      oracleSignature,
+      PublicKey.fromBase58(oracleData.walletId)
+    );
+  } catch (error) {
+    console.error('Failed to create proof');
+    console.error(error);
+    res.status(500).send('Failed to create proof');
+    return;
+  }
+
+  if (!proof) {
+    res.status(500).send('Failed to create proof');
+    return;
+  }
+
+  const pass3 = chainClient.runtime.resolve('Pass3');
+
+  // Send the proof to the chain
+  const tx = await chainClient.transaction(signerPublicKey, () => {
+    pass3.mint(proof);
+  });
+
+  await tx.sign();
+  await tx.send();
+
+  // return success message with the proof
+  res.send({
+    message: 'Proof created and sent to the chain',
+    proof,
+  });
 });
 
-setupZkProgram();
+app.listen(process.env.PORT, () => {
+  console.log('Server started at http://localhost:' + process.env.PORT);
+});
+
+setup();

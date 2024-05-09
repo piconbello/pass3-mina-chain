@@ -19,7 +19,9 @@
     "test": "node --experimental-vm-modules --experimental-wasm-modules --experimental-wasm-threads ./node_modules/jest/bin/jest.js",
     "test:watch": "npm run test --watchAll",
     "build": "tsc",
-    "start": "node --experimental-specifier-resolution=node dist/src/main.js",
+    "start": "yarn start:chain & yarn start:client",
+    "start:client": "node --experimental-specifier-resolution=node dist/src/main.js",
+    "start:chain": "FORCE_COLOR=3 protokit start ./dist/src/chain.config.js",
     "build-and-start": "yarn build && yarn start",
     "dev": "npm-watch build-and-start"
   },
@@ -55,6 +57,7 @@
     "@proto-kit/protocol": "0.1.1-develop.651",
     "@proto-kit/sdk": "0.1.1-develop.651",
     "@proto-kit/sequencer": "0.1.1-develop.651",
+    "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "o1js": "0.13.1",
     "reflect-metadata": "^0.2.1",
