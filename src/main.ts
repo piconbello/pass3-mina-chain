@@ -11,6 +11,7 @@ import { Identity, OracleData, OracleResponse } from './utils';
 dotenv.config();
 
 const app = express();
+app.use(express.json());
 
 let verificationKeyZkProgram: string | null = null;
 let chainClient: any = null;
@@ -79,9 +80,16 @@ app.post('/prove', async (req: Request, res: Response) => {
     return;
   }
 
-  const walletId = req.body.walletId;
-  if (!walletId) {
-    res.status(400).send('Wallet id is missing');
+  let walletId = '';
+  try {
+    walletId = req.body.walletId;
+    if (!walletId) {
+      res.status(400).send('Wallet id is missing');
+      return;
+    }
+  } catch (error) {
+    console.log('error on parsing req body', error);
+    res.status(500).send('Failed to parse req body');
     return;
   }
 
@@ -102,6 +110,7 @@ app.post('/prove', async (req: Request, res: Response) => {
   } catch (error) {
     console.error(error);
     res.status(500).send('Failed to fetch oracle response');
+    return;
   }
 
   if (!oracleData) {
@@ -114,7 +123,7 @@ app.post('/prove', async (req: Request, res: Response) => {
     over18: Bool(oracleData.identityData.over18),
     sanctioned: Bool(oracleData.identityData.sanctioned),
     unique: Bool(oracleData.identityData.unique),
-    currentDate: Field.from(oracleData.identityData.currentDate),
+    timestamp: Field.from(oracleData.identityData.timestamp),
   });
 
   const oracleSignature = Signature.fromJSON(oracleData.signature);

@@ -1,5 +1,5 @@
 process.env.ORACLE_PUBLIC_KEY =
-  'B62qmdp1brcf4igTDyv7imzhpVifpNsb2dm3TRJb2bNEeVn1q8uZ9s8';
+  'B62qosqYvYKpaeYLctJ1s47fKbAafJbKEsuyP3MbtzU1DyuS5J2shkr';
 
 import { jest } from '@jest/globals';
 import { TestingAppChain } from '@proto-kit/sdk';
@@ -27,7 +27,7 @@ interface OracleResponse {
       over18: boolean;
       sanctioned: boolean;
       unique: boolean;
-      currentDate: string;
+      timestamp: number;
     };
     walletId: string; // TODO change to publicKey
     doesExist: boolean;
@@ -46,15 +46,15 @@ const mockOracleResponse: OracleResponse = {
       over18: true,
       sanctioned: false,
       unique: true,
-      currentDate: '20240501',
+      timestamp: 1715278863167,
     },
-    walletId: 'B62qmKXrzYjhhgiCx8cQAfZ3V2ekkh2oNUocCbmRr1Kjxx4bM9TKwM3',
+    walletId: 'B62qosqYvYKpaeYLctJ1s47fKbAafJbKEsuyP3MbtzU1DyuS5J2shkr', // TODO :: doesn't have to be the same public key with `publicKey`
     doesExist: true,
     signature: {
-      r: '3713807165287585871472741919076973598580564819317795203796236102083443117890',
-      s: '15760059556638958257089083211160862708145378018944207428893737827195062927825',
+      r: '13290693580590850811416649792758552000695392783513797078621797970041235995608',
+      s: '13713802390576193094902875723993219131207245174794760390058715433977250109691',
     },
-    publicKey: 'B62qmdp1brcf4igTDyv7imzhpVifpNsb2dm3TRJb2bNEeVn1q8uZ9s8',
+    publicKey: 'B62qosqYvYKpaeYLctJ1s47fKbAafJbKEsuyP3MbtzU1DyuS5J2shkr',
   },
 };
 
@@ -101,7 +101,7 @@ describe('pass3 interaction', () => {
       over18: Bool(oracleData.identityData.over18),
       sanctioned: Bool(oracleData.identityData.sanctioned),
       unique: Bool(oracleData.identityData.unique),
-      currentDate: Field.from(oracleData.identityData.currentDate),
+      timestamp: Field.from(oracleData.identityData.timestamp),
     });
 
     const oracleSignature = Signature.fromJSON(oracleData.signature);
@@ -134,7 +134,7 @@ describe('pass3 interaction', () => {
     );
     expect(nonChangedProofVerification).toBe(true);
 
-    proof.publicOutput.identity.currentDate = Field.from('21000101');
+    proof.publicOutput.identity.timestamp = Field.from(1715277274481);
     const changedProofVerification = await verify(
       proof,
       verificationKey.verificationKey

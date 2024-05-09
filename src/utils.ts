@@ -6,7 +6,7 @@ export interface OracleData {
     over18: boolean;
     sanctioned: boolean;
     unique: boolean;
-    currentDate: string;
+    timestamp: number;
   };
   walletId: string; // TODO change to publicKey
   doesExist: boolean;
@@ -26,7 +26,7 @@ export class Identity extends Struct({
   over18: Bool,
   sanctioned: Bool,
   unique: Bool,
-  currentDate: Field,
+  timestamp: Field,
 }) {
   // method for signature creation and verification
   toFields(): Field[] {
@@ -34,7 +34,7 @@ export class Identity extends Struct({
       ...this.over18.toFields(),
       ...this.sanctioned.toFields(),
       ...this.unique.toFields(),
-      this.currentDate,
+      this.timestamp,
     ];
   }
 }
