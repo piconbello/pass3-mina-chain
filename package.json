@@ -20,7 +20,7 @@
     "test:watch": "npm run test --watchAll",
     "build": "tsc",
     "start": "yarn start:chain & yarn start:client",
-    "start:client": "node --experimental-specifier-resolution=node dist/src/main.js",
+    "start:client": "node --experimental-specifier-resolution=node ./dist/src/main.js",
     "start:chain": "FORCE_COLOR=3 protokit start ./dist/src/chain.config.js",
     "build-and-start": "yarn build && yarn start",
     "dev:chain": "yarn build && yarn start:chain",
