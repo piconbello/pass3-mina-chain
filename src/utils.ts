@@ -14,7 +14,6 @@ export interface OracleData {
     r: string;
     s: string;
   };
-  publicKey: string;
 }
 
 export interface OracleResponse {

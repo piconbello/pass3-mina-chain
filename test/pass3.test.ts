@@ -35,7 +35,6 @@ interface OracleResponse {
       r: string;
       s: string;
     };
-    publicKey: string;
   };
 }
 
@@ -54,7 +53,6 @@ const mockOracleResponse: OracleResponse = {
       r: '13290693580590850811416649792758552000695392783513797078621797970041235995608',
       s: '13713802390576193094902875723993219131207245174794760390058715433977250109691',
     },
-    publicKey: 'B62qosqYvYKpaeYLctJ1s47fKbAafJbKEsuyP3MbtzU1DyuS5J2shkr',
   },
 };
 
