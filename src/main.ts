@@ -102,11 +102,13 @@ app.post('/prove', async (req: Request, res: Response) => {
 
     const _response = (await response.json()) as OracleResponse;
 
-    oracleData = _response.data;
-    if (!oracleData.doesExist) {
-      res.status(400).send('User does not exist');
+    // Check if status is 200
+    if (response.status !== 200) {
+      res.status(response.status).send(_response.message);
       return;
     }
+
+    oracleData = _response.data;
   } catch (error) {
     console.error(error);
     res.status(500).send('Failed to fetch oracle response');
