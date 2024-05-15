@@ -3,55 +3,23 @@ process.env.ORACLE_PUBLIC_KEY =
 
 import { jest } from '@jest/globals';
 import { TestingAppChain } from '@proto-kit/sdk';
-import {
-  PrivateKey,
-  Bool,
-  Field,
-  verify,
-  Signature,
-  CircuitString,
-  PublicKey,
-} from 'o1js';
-import {
-  Pass3,
-  generateSignatureUsingDefaultKeys,
-  zkProgramPass3,
-} from '../src/pass3';
-import { Identity } from '../src/utils';
-
-interface OracleResponse {
-  message: string;
-  data: {
-    identityData: {
-      // could be an interface
-      over18: boolean;
-      sanctioned: boolean;
-      unique: boolean;
-      timestamp: number;
-    };
-    walletId: string; // TODO change to publicKey
-    doesExist: boolean;
-    signature: {
-      r: string;
-      s: string;
-    };
-  };
-}
+import { PrivateKey, Bool, Field, verify, Signature, PublicKey } from 'o1js';
+import { Pass3, zkProgramPass3 } from '../src/pass3';
+import { Identity, OracleResponse } from '../src/utils';
 
 const mockOracleResponse: OracleResponse = {
-  message: 'Service called successfully',
   data: {
     identityData: {
+      walletId: 'B62qkUB1fZMwGHCavGwQYjTkk1KcoHYCZ5BzKcGjn3Q22wbpp1dqNnN',
       over18: true,
       sanctioned: false,
       unique: true,
-      timestamp: 1715278863167,
+      timestamp: 1715800344918,
     },
-    walletId: 'B62qosqYvYKpaeYLctJ1s47fKbAafJbKEsuyP3MbtzU1DyuS5J2shkr', // TODO :: doesn't have to be the same public key with `publicKey`
     doesExist: true,
     signature: {
-      r: '13290693580590850811416649792758552000695392783513797078621797970041235995608',
-      s: '13713802390576193094902875723993219131207245174794760390058715433977250109691',
+      r: '19991836609674267495007178261932950444671959597230755987092448987128012662181',
+      s: '20373786362087879888748332332083636959879183926665629349907624781046728478862',
     },
   },
 };
@@ -100,14 +68,14 @@ describe('pass3 interaction', () => {
       sanctioned: Bool(oracleData.identityData.sanctioned),
       unique: Bool(oracleData.identityData.unique),
       timestamp: Field.from(oracleData.identityData.timestamp),
+      walletId: PublicKey.fromBase58(oracleData.identityData.walletId),
     });
 
     const oracleSignature = Signature.fromJSON(oracleData.signature);
 
     const proof = await zkProgramPass3.proveIdentity(
       tempIdentityData,
-      oracleSignature,
-      PublicKey.fromBase58(oracleData.walletId)
+      oracleSignature
     );
 
     const tx = await appChain.transaction(alice, () => {
@@ -120,7 +88,7 @@ describe('pass3 interaction', () => {
     const block = await appChain.produceBlock();
 
     const identity = await appChain.query.runtime.Pass3.identities.get(
-      proof.publicOutput.userPublicKey
+      proof.publicOutput.identity.walletId
     );
 
     expect(block?.transactions[0].status.toBoolean()).toBe(true);

@@ -17,7 +17,6 @@ import { Identity } from './utils';
 
 export class PublicOutput extends Struct({
   identity: Identity,
-  userPublicKey: PublicKey,
 }) {}
 
 export const generateSignatureUsingDefaultKeys = (
@@ -44,13 +43,8 @@ export const zkProgramPass3 = Experimental.ZkProgram({
       privateInputs: [
         Identity,
         Signature, // zkOracle data signature
-        PublicKey, // user wallet public key
       ],
-      method(
-        personalData: Identity,
-        oracleSignature: Signature,
-        userWalletId: PublicKey
-      ): PublicOutput {
+      method(personalData: Identity, oracleSignature: Signature): PublicOutput {
         // Validate the data from the oracle
         const validSignature = oracleSignature.verify(
           PublicKey.fromBase58(process.env.ORACLE_PUBLIC_KEY as string),
@@ -65,7 +59,6 @@ export const zkProgramPass3 = Experimental.ZkProgram({
 
         return new PublicOutput({
           identity: personalData,
-          userPublicKey: userWalletId,
         });
       },
     },
@@ -87,7 +80,7 @@ export class Pass3 extends RuntimeModule<Record<string, never>> {
     pass3Proof.verify();
 
     const publicOutput = pass3Proof.publicOutput;
-    const userPublicKey = publicOutput.userPublicKey;
+    const userPublicKey = publicOutput.identity.walletId;
     const identity = publicOutput.identity;
 
     // Update the identity of the user
