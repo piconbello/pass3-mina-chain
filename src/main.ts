@@ -74,9 +74,10 @@ app.get('/hello', (req: Request, res: Response) => {
 
 app.post('/prove', async (req: Request, res: Response) => {
   if (!verificationKeyZkProgram || !chainClient || !signerPublicKey) {
-    res
-      .status(500)
-      .send('Zk program, chain client or signer public key missing');
+    res.status(500).send({
+      message: 'Zk program, chain client or signer public key missing',
+      success: false,
+    });
     return;
   }
 
@@ -84,12 +85,18 @@ app.post('/prove', async (req: Request, res: Response) => {
   try {
     walletId = req.body.walletId;
     if (!walletId) {
-      res.status(400).send('Wallet id is missing');
+      res.status(400).send({
+        message: 'Wallet id is missing',
+        success: false,
+      });
       return;
     }
   } catch (error) {
     console.log('error on parsing req body', error);
-    res.status(500).send('Failed to parse req body');
+    res.status(500).send({
+      success: false,
+      message: 'Failed to parse request body',
+    });
     return;
   }
 
@@ -104,19 +111,28 @@ app.post('/prove', async (req: Request, res: Response) => {
 
     // Check if status is 200
     if (response.status !== 200) {
-      res.status(response.status).send('Failed to fetch oracle response');
+      res.status(response.status).send({
+        message: 'Failed to fetch oracle response',
+        success: false,
+      });
       return;
     }
 
     oracleData = _response.data;
   } catch (error) {
     console.error(error);
-    res.status(500).send('Failed to fetch oracle response');
+    res.status(500).send({
+      message: 'Failed to fetch oracle response',
+      success: false,
+    });
     return;
   }
 
   if (!oracleData) {
-    res.status(500).send('Failed to fetch oracle response');
+    res.status(500).send({
+      message: 'Failed to parse oracle response',
+      success: false,
+    });
     return;
   }
 
@@ -140,12 +156,18 @@ app.post('/prove', async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Failed to create proof');
     console.error(error);
-    res.status(500).send('Failed to create proof');
+    res.status(500).send({
+      message: 'Failed to create proof',
+      success: false,
+    });
     return;
   }
 
   if (!proof) {
-    res.status(500).send('Failed to create proof');
+    res.status(500).send({
+      message: 'Failed to create proof silently',
+      success: false,
+    });
     return;
   }
 
@@ -162,6 +184,7 @@ app.post('/prove', async (req: Request, res: Response) => {
   // return success message with the proof
   res.send({
     message: 'Proof created and sent to the chain',
+    success: true,
     proof,
   });
 });
