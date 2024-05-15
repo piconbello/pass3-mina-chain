@@ -1,4 +1,4 @@
-import { Bool, Field, Struct } from 'o1js';
+import { Bool, Field, PublicKey, Struct } from 'o1js';
 
 export interface OracleData {
   identityData: {
@@ -7,8 +7,8 @@ export interface OracleData {
     sanctioned: boolean;
     unique: boolean;
     timestamp: number;
+    walletId: string;
   };
-  walletId: string; // TODO change to publicKey
   doesExist: boolean;
   signature: {
     r: string;
@@ -17,7 +17,6 @@ export interface OracleData {
 }
 
 export interface OracleResponse {
-  message: string;
   data: OracleData;
 }
 
@@ -26,10 +25,12 @@ export class Identity extends Struct({
   sanctioned: Bool,
   unique: Bool,
   timestamp: Field,
+  walletId: PublicKey,
 }) {
   // method for signature creation and verification
   toFields(): Field[] {
     return [
+      ...this.walletId.toFields(),
       ...this.over18.toFields(),
       ...this.sanctioned.toFields(),
       ...this.unique.toFields(),

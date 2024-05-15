@@ -104,7 +104,7 @@ app.post('/prove', async (req: Request, res: Response) => {
 
     // Check if status is 200
     if (response.status !== 200) {
-      res.status(response.status).send(_response.message);
+      res.status(response.status).send('Failed to fetch oracle response');
       return;
     }
 
@@ -126,6 +126,7 @@ app.post('/prove', async (req: Request, res: Response) => {
     sanctioned: Bool(oracleData.identityData.sanctioned),
     unique: Bool(oracleData.identityData.unique),
     timestamp: Field.from(oracleData.identityData.timestamp),
+    walletId: PublicKey.fromBase58(oracleData.identityData.walletId),
   });
 
   const oracleSignature = Signature.fromJSON(oracleData.signature);
@@ -134,8 +135,7 @@ app.post('/prove', async (req: Request, res: Response) => {
   try {
     proof = await zkProgramPass3.proveIdentity(
       tempIdentityData,
-      oracleSignature,
-      PublicKey.fromBase58(oracleData.walletId)
+      oracleSignature
     );
   } catch (error) {
     console.error('Failed to create proof');
