@@ -17,26 +17,7 @@ import {
   generateSignatureUsingDefaultKeys,
   zkProgramPass3,
 } from '../src/pass3';
-import { Identity } from '../src/utils';
-
-interface OracleResponse {
-  message: string;
-  data: {
-    identityData: {
-      // could be an interface
-      over18: boolean;
-      sanctioned: boolean;
-      unique: boolean;
-      timestamp: number;
-    };
-    walletId: string; // TODO change to publicKey
-    doesExist: boolean;
-    signature: {
-      r: string;
-      s: string;
-    };
-  };
-}
+import { Identity, OracleResponse } from '../src/utils';
 
 const mockOracleResponse: OracleResponse = {
   message: 'Service called successfully',
