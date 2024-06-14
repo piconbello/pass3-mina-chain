@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  chain:
+    image: pass3-mina-chain:latest
+    build:
+      context: ./
+    command: sh -c "yarn custom-run"
+    restart: unless-stopped
+    ports:
+      - '8080:8080'
+    environment:
+      - BLOCK_INTERVAL=5000
+      - PRODUCE_EMPTY_BLOCKS=false
+
+  client:
+    image: pass3-mina-chain:latest
+    build:
+      context: ./
+    command: sh -c "yarn start:client"
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+    environment:
+      - ORACLE_BASE_URL=http://host.docker.internal:8081 # oracle is running in the host
+      - PROTOKIT_URL=http://chain:8080/graphql
+    depends_on:
+      - chain

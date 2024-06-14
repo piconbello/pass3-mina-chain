@@ -14,3 +14,10 @@ npm install
 npm run test:watch
 ```
 
+## Running Locally
+
+with docker compose
+
+```bash
+docker compose up
+```
