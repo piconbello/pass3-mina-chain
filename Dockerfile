@@ -25,4 +25,4 @@ RUN yarn install --frozen-lockfile --production
 
 COPY --from=build /app/dist ./dist
 
-CMD ["yarn", "start"]
+CMD ["yarn", "custom-run"]

@@ -1,6 +1,6 @@
 {
   "files": ["node_modules/jest-expect-message/types/index.d.ts"],
-  "include": ["./src/**/*"],
+  "include": ["./src/**/*", "./bin/**/*"],
   "compilerOptions": {
     "composite": false,
     "forceConsistentCasingInFileNames": true,
