@@ -20,12 +20,13 @@
     "test:watch": "npm run test --watchAll",
     "build": "tsc",
     "start": "yarn start:chain & yarn start:client",
-    "start:client": "node --experimental-specifier-resolution=node dist/src/main.js",
+    "start:client": "node --experimental-specifier-resolution=node ./dist/src/main.js",
     "start:chain": "FORCE_COLOR=3 protokit start ./dist/src/chain.config.js",
     "build-and-start": "yarn build && yarn start",
     "dev:chain": "yarn build && yarn start:chain",
     "dev:client": "yarn build && yarn start:client",
-    "dev": "npm-watch build-and-start"
+    "dev": "npm-watch build-and-start",
+    "custom-run": "node --experimental-specifier-resolution=node --experimental-vm-modules --experimental-wasm-modules --experimental-wasm-threads ./dist/bin/run.js"
   },
   "devDependencies": {
     "@jest/globals": "^29.6.1",
